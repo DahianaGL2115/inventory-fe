@@ -1,16 +1,14 @@
-FROM node:20-alpine
-
+FROM node:20-alpine AS build
 WORKDIR /app
 
-# Instalar dependencias
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
-# Copiar código fuente
 COPY . .
+RUN npm run build
 
-# Exponer puerto
+FROM nginx:alpine
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist /usr/share/nginx/html
+
 EXPOSE 3000
-
-# Comando para iniciar en modo desarrollo
-CMD ["npm", "run", "dev"]
